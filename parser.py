@@ -3,11 +3,11 @@ import sys
 
 def main():
 
-    ignore_strings = ["INT.", "EXT.", " - ", "FADE OUT", "END"]
-
+    filepath = sys.argv[1]
+    ignore_strings = ["INT.", "EXT.", " - ", "FADE OUT", "END", ".", "CUT TO", ":"]
     film_dialogue = []
 
-    with open(sys.argv[1], 'r') as file:
+    with open(filepath, 'r') as file:
         lines = file.readlines()
 
         for index, line in enumerate(lines):
@@ -26,19 +26,28 @@ def main():
 
                 # Now we assume it's a character line
                 if character_line:
-                    dialogue_index = index + 1
-                    dialogue = []
-                    # Find the subsequent dialogue
-                    while lines[dialogue_index].replace(" ", "") != "\n":
-                        dialogue.append(lines[dialogue_index].strip())
-                        dialogue_index += 1
-                    # Add it to our list of dialogue
-                    film_dialogue.append(script_line + ": " + ' '.join(dialogue))
+                    if index + 1 < len(lines):
+                        dialogue_index = index + 1
+                        dialogue = []
+                        # Find the subsequent dialogue
+                        while lines[dialogue_index].replace(" ", "") != "\n":
+                            dialogue.append(lines[dialogue_index].strip())
+                            if dialogue_index + 1 < len(lines):
+                                dialogue_index += 1
+                            else:
+                                break
+                        # Add it to our list of dialogue
+                        film_dialogue.append(script_line + ": " + ' '.join(dialogue))
 
-    for line in film_dialogue:
-        print(line)
+    new_filepath = filepath.replace("reduced", "parsed")
 
-    return True
+    with open(new_filepath, 'w') as file:
+        for line in film_dialogue:
+            file.write(line + '\n')
+
+    print(f"Saved to {new_filepath}")
+
+    return
 
 if __name__ == "__main__":
     main()
